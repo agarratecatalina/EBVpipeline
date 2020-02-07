@@ -47,16 +47,20 @@ for s in "${samples[@]}"
 	#samtools stats $outpath/$s/$s.mapped.sorted.withoutrep.bam > $outpath/$s/$s.mapped.sorted.withoutrep.stats
 	
 	## get vcf
-	bcftools mpileup -f $referenceEBV $outpath/$s/$s.mapped.sorted.withoutrep.bam |bcftools call -mv -Oz --ploidy 1 -o $outpath/$s/$s.calls.vcf.gz
-	bcftools index $outpath/$s/$s.calls.vcf.gz
-	gzip -d $outpath/$s/$s.calls.vcf.gz
-	bgzip -c $outpath/$s/$s.calls.vcf > $outpath/$s/$s.calls.vcf.gz
-	tabix $outpath/$s/$s.calls.vcf.gz
+	#bcftools mpileup -f $referenceEBV $outpath/$s/$s.mapped.sorted.withoutrep.bam |bcftools call -mv --ploidy 1 -o $outpath/$s/$s.calls.vcf
+	###bcftools index $outpath/$s/$s.calls.vcf.gz
+	###gzip -dk $outpath/$s/$s.calls.vcf.gz
+	
+	#bgzip -c $outpath/$s/$s.calls.vcf > $outpath/$s/$s.calls.vcf.gz
+	#tabix $outpath/$s/$s.calls.vcf.gz
+
 
 	#Cat VCF
+	interval='/home/cata/EBV/coordenadas/EBV1/Coordenadas.EBV1.bed' ## hay que generarlo from scrach a partir de 
 	zgrep '^#' $outpath/$s/$s.calls.vcf.gz > header
-	intersectBed -wa -a $outpath/$s/$s.calls.vcf.gz -b /home/cata/EBV/coordenadas/EBV1/Coordenadas.EBV1.bed > body.vcf
+	intersectBed -wa -a $outpath/$s/$s.calls.vcf.gz -b $interval > body.vcf  ### 
 	cat header body.vcf > $outpath/$s/$s.NonRep.calls.vcf
+	
 	bgzip -c $outpath/$s/$s.NonRep.calls.vcf > $outpath/$s/$s.NonRep.calls.vcf.gz
 	tabix $outpath/$s/$s.NonRep.calls.vcf.gz
 	rm header
@@ -77,12 +81,6 @@ for s in "${samples[@]}"
 	modified_reference=$outpath/$s/$s'_modified_reference.fa'
 	/home/cata/EBV/src/mask_reference.py -r $reference -c $outpath/$s/$s.COB-DEL.bed -o $modified_reference
 	bcftools consensus -f $modified_reference $outpath/$s/$s.NonRep.calls.vcf.gz > $outpath/$s/$s.nonrep.consensus.fa
-	bcftools consensus -f $reference $outpath/$s/$s.calls.vcf.gz > $outpath/$s/$s.consensus.fa
-	
-	
-done
- 
-
 	
 done
  
